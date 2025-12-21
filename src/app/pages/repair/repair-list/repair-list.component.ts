@@ -272,13 +272,13 @@ export class RepairListComponent extends adminBaseMixin(Component) implements On
               item.totalAmount = partsAmount + repairAmount;
             });
             this.holdAllRepair = this.allRepair;
-            // Use totalAmount for grouping
+            // Use totalAmount for grouping (preserve original amount field)
             const dataWithTotal = (res.data || []).map(item => {
               const partsAmount = item.partsAmount || 0;
               const repairAmount = item.amount || 0;
-              return { ...item, amount: partsAmount + repairAmount };
+              return { ...item, totalAmount: partsAmount + repairAmount };
             });
-            this.repairs = this.utilsService.arrayGroupByField(dataWithTotal, 'dateString', 'amount');
+            this.repairs = this.utilsService.arrayGroupByField(dataWithTotal, 'dateString', 'totalAmount');
             // Initialize select property for grouped items
             this.repairs.forEach(group => {
               group.data.forEach(item => {

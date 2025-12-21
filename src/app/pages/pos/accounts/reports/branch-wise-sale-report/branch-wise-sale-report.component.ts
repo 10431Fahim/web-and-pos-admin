@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { FormControl, FormGroup } from '@angular/forms';
+import { MatDatepickerInputEvent } from '@angular/material/datepicker';
 import { ReportsService } from '../../../../../services/common/reports.service';
 import { ShopService } from '../../../../../services/common/shop.service';
 import { UiService } from '../../../../../services/core/ui.service';
 import { ExportPrintService } from '../../../../../services/core/export-print.service';
+import { UtilsService } from '../../../../../services/core/utils.service';
 
 @Component({
   selector: 'app-branch-wise-sale-report',
@@ -18,6 +21,13 @@ export class BranchWiseSaleReportComponent implements OnInit {
   selectedBranch: string = '';
   startDate: Date;
   endDate: Date = new Date();
+  
+  // Date Range Filter
+  today = new Date();
+  dataFormDateRange = new FormGroup({
+    start: new FormControl(),
+    end: new FormControl(),
+  });
 
   constructor(
     private reportsService: ReportsService,
@@ -25,11 +35,18 @@ export class BranchWiseSaleReportComponent implements OnInit {
     private uiService: UiService,
     private exportPrintService: ExportPrintService,
     private datePipe: DatePipe,
+    private utilsService: UtilsService,
   ) {
     const today = new Date();
     this.endDate = today;
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
     this.startDate = firstDay;
+    
+    // Initialize date range form
+    this.dataFormDateRange.patchValue({
+      start: firstDay,
+      end: today
+    });
   }
 
   ngOnInit(): void {
@@ -70,6 +87,28 @@ export class BranchWiseSaleReportComponent implements OnInit {
           this.uiService.message('Failed to load report', 'warn');
         }
       });
+  }
+
+  endChangeRegDateRange(event: MatDatepickerInputEvent<any>) {
+    if (event.value) {
+      const startDate = this.utilsService.getDateString(
+        this.dataFormDateRange.value.start
+      );
+      const endDate = this.utilsService.getDateString(
+        this.dataFormDateRange.value.end
+      );
+
+      if (startDate && endDate) {
+        const start = new Date(this.dataFormDateRange.value.start);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(this.dataFormDateRange.value.end);
+        end.setHours(23, 59, 59, 999);
+        
+        this.startDate = start;
+        this.endDate = end;
+        this.loadReport();
+      }
+    }
   }
 
   onDateRangeChange() {

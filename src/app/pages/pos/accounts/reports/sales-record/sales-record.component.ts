@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { FormControl, FormGroup } from '@angular/forms';
+import { MatDatepickerInputEvent } from '@angular/material/datepicker';
 import { SaleService } from '../../../../../services/common/sale.service';
 import { CategoryService } from '../../../../../services/common/category.service';
 import { SubCategoryService } from '../../../../../services/common/sub-category.service';
@@ -17,6 +19,7 @@ import { ShopInformation } from '../../../../../interfaces/common/shop-informati
 import { MatTableDataSource } from '@angular/material/table';
 import { PAYMENT_TYPES } from '../../../../../core/utils/app-data';
 import { DATABASE_KEY } from '../../../../../core/utils/global-variable';
+import { UtilsService } from '../../../../../services/core/utils.service';
 
 @Component({
   selector: 'app-sales-record',
@@ -37,6 +40,13 @@ export class SalesRecordComponent implements OnInit {
   startDate: Date | null = null;
   endDate: Date | null = null;
   dateFilterType: string = 'all'; // 'all', 'today', 'yesterday', 'last7days', 'last30days', 'thisMonth', 'custom'
+  
+  // Date Range Filter
+  today = new Date();
+  dataFormDateRange = new FormGroup({
+    start: new FormControl(),
+    end: new FormControl(),
+  });
 
   // Dropdown options
   categories: Category[] = [];
@@ -101,7 +111,8 @@ export class SalesRecordComponent implements OnInit {
     private uiService: UiService,
     private exportPrintService: ExportPrintService,
     private storageService: StorageService,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private utilsService: UtilsService
   ) {}
 
   ngOnInit(): void {
@@ -236,6 +247,29 @@ export class SalesRecordComponent implements OnInit {
 
   onBrandChange() {
     this.loadSales();
+  }
+
+  endChangeRegDateRange(event: MatDatepickerInputEvent<any>) {
+    if (event.value) {
+      const startDate = this.utilsService.getDateString(
+        this.dataFormDateRange.value.start
+      );
+      const endDate = this.utilsService.getDateString(
+        this.dataFormDateRange.value.end
+      );
+
+      if (startDate && endDate) {
+        const start = new Date(this.dataFormDateRange.value.start);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(this.dataFormDateRange.value.end);
+        end.setHours(23, 59, 59, 999);
+        
+        this.startDate = start;
+        this.endDate = end;
+        this.dateFilterType = 'custom';
+        this.loadSales();
+      }
+    }
   }
 
   onDateChange() {

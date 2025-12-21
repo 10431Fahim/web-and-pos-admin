@@ -35,6 +35,9 @@ export class BalanceSheetComponent implements OnInit {
           this.isLoading = false;
           if (res.success) {
             this.balanceSheet = res.data;
+            // Debug: Check repair amount
+            console.log('Balance Sheet Data:', this.balanceSheet);
+            console.log('Repair Service Amount:', this.balanceSheet?.assets?.currentAssets?.repairServiceAmount);
           }
         },
         error: (err) => {
@@ -109,6 +112,7 @@ export class BalanceSheetComponent implements OnInit {
     data.push({ Category: '', Item: 'Cash at Bank', Amount: (bs.assets?.currentAssets?.cashAtBank || 0).toFixed(2) });
     data.push({ Category: '', Item: 'Inventory / Stock', Amount: (bs.assets?.currentAssets?.inventory || 0).toFixed(2) });
     data.push({ Category: '', Item: 'Accounts Receivable', Amount: (bs.assets?.currentAssets?.accountsReceivable || 0).toFixed(2) });
+    data.push({ Category: '', Item: 'Repair Service Amount', Amount: (bs.assets?.currentAssets?.repairServiceAmount || 0).toFixed(2) });
     data.push({ Category: '', Item: 'Total Current Assets', Amount: (bs.assets?.currentAssets?.totalCurrentAssets || 0).toFixed(2) });
     data.push({ Category: '', Item: '', Amount: '' });
     data.push({ Category: '', Item: 'Total Fixed Assets', Amount: (bs.assets?.fixedAssets?.total || 0).toFixed(2) });
@@ -166,6 +170,10 @@ export class BalanceSheetComponent implements OnInit {
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;">Accounts Receivable</td>
                 <td style="text-align: right; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-weight: 600;">${(bs.assets?.currentAssets?.accountsReceivable || 0).toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;">Repair Service Amount</td>
+                <td style="text-align: right; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-weight: 600;">${(bs.assets?.currentAssets?.repairServiceAmount || 0).toFixed(2)}</td>
               </tr>
               <tr style="border-top: 2px solid #e0e0e0; margin-top: 10px;">
                 <td style="padding: 10px 0; font-weight: 600;">Total Current Assets</td>

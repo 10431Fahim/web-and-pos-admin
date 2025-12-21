@@ -110,6 +110,10 @@
               <span>Accounts Receivable (Customer Due)</span>
               <strong>{{ balanceSheet.assets?.currentAssets?.accountsReceivable | currency:'BDT ':'symbol':'1.2-2' }}</strong>
             </div>
+            <div class="item">
+              <span>Repair Service Amount</span>
+              <strong>{{ balanceSheet.assets?.currentAssets?.repairServiceAmount | currency:'BDT ':'symbol':'1.2-2' }}</strong>
+            </div>
             <div class="item subtotal">
               <span>Total Current Assets</span>
               <strong>{{ balanceSheet.assets?.currentAssets?.totalCurrentAssets | currency:'BDT ':'symbol':'1.2-2' }}</strong>

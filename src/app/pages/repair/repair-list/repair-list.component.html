@@ -94,15 +94,36 @@
 
     <!-- Filter Section -->
     <div class="filter-section">
-      <mat-form-field appearance="outline" class="date-filter">
-        <mat-label>Filter Date</mat-label>
-        <mat-date-range-input [formGroup]="dataFormDateRange" [rangePicker]="picker" [max]="today">
-          <input matStartDate formControlName="start" placeholder="Start date" readonly>
-          <input matEndDate formControlName="end" placeholder="End date" readonly (dateChange)="endChangeRegDateRange($event)">
-        </mat-date-range-input>
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-date-range-picker #picker></mat-date-range-picker>
-      </mat-form-field>
+      <div class="date-filter-container">
+        <mat-form-field
+          class="date-filter-field"
+          appearance="outline"
+          (click)="picker.open()"
+        >
+          <mat-label>Date Range</mat-label>
+          <mat-date-range-input
+            [formGroup]="dataFormDateRange"
+            [rangePicker]="picker"
+            [max]="today"
+          >
+            <input
+              matStartDate
+              formControlName="start"
+              placeholder="Start date"
+              readonly
+            />
+            <input
+              matEndDate
+              formControlName="end"
+              placeholder="End date"
+              readonly
+              (dateChange)="endChangeRegDateRange($event)"
+            />
+          </mat-date-range-input>
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-date-range-picker #picker></mat-date-range-picker>
+        </mat-form-field>
+      </div>
 
       <button mat-raised-button [matMenuTriggerFor]="menuMonth" class="filter-btn">
         <mat-icon>calendar_month</mat-icon>

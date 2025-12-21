@@ -11,7 +11,7 @@ export const environment = {
   // apiBaseLink: 'https://api.gadgetandmobile.com.bd',
   // ftpBaseLink: 'https://api.gadgetandmobile.com.bd',
 
-  ftpPrefixPath: 'https://api.clothigo.com/api/upload/images',
+  ftpPrefixPath: 'https://api.gadgetandmobile.com.bd/api/upload/images',
   ftpPrefix: '/api',
   userLoginUrl: 'login',
   userBaseUrl: '',

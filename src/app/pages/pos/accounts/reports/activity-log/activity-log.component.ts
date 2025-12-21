@@ -4,8 +4,10 @@ import { UiService } from '../../../../../services/core/ui.service';
 import { ExportPrintService } from '../../../../../services/core/export-print.service';
 import { DatePipe } from '@angular/common';
 import { MatTableDataSource } from '@angular/material/table';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
+import { MatDatepickerInputEvent } from '@angular/material/datepicker';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { UtilsService } from '../../../../../services/core/utils.service';
 
 @Component({
   selector: 'app-activity-log',
@@ -31,6 +33,13 @@ export class ActivityLogComponent implements OnInit {
   selectedSubjectType: string = 'All';
   users: any[] = [];
   userSearchControl = new FormControl('');
+  
+  // Date Range Filter
+  today = new Date();
+  dataFormDateRange = new FormGroup({
+    start: new FormControl(),
+    end: new FormControl(),
+  });
 
   subjectTypes: string[] = ['All', 'Sell', 'Purchase', 'Contact', 'User', 'CashTransaction'];
 
@@ -46,14 +55,22 @@ export class ActivityLogComponent implements OnInit {
     private reportsService: ReportsService,
     private uiService: UiService,
     private exportPrintService: ExportPrintService,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private utilsService: UtilsService
   ) {}
 
   ngOnInit(): void {
     // Set default date range (current year)
     const today = new Date();
     this.endDate = today;
-    this.startDate = new Date(today.getFullYear(), 0, 1); // January 1st of current year
+    const startDate = new Date(today.getFullYear(), 0, 1); // January 1st of current year
+    this.startDate = startDate;
+    
+    // Initialize date range form
+    this.dataFormDateRange.patchValue({
+      start: startDate,
+      end: today
+    });
     
     this.selectedUserId = 'All';
     this.selectedSubjectType = 'All';
@@ -132,6 +149,32 @@ export class ActivityLogComponent implements OnInit {
 
   onDateChange() {
     // Date change doesn't auto-load, user needs to click "Load Report" button
+  }
+
+  endChangeRegDateRange(event: MatDatepickerInputEvent<any>) {
+    if (event.value) {
+      const startDate = this.utilsService.getDateString(
+        this.dataFormDateRange.value.start
+      );
+      const endDate = this.utilsService.getDateString(
+        this.dataFormDateRange.value.end
+      );
+
+      if (startDate && endDate) {
+        const start = new Date(this.dataFormDateRange.value.start);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(this.dataFormDateRange.value.end);
+        end.setHours(23, 59, 59, 999);
+        
+        this.startDate = start;
+        this.endDate = end;
+        this.loadReport();
+      } else {
+        this.startDate = null;
+        this.endDate = null;
+        this.loadReport();
+      }
+    }
   }
 
   onFilterChange() {

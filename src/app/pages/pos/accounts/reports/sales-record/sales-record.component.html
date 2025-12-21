@@ -41,32 +41,36 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Filter Date</mat-label>
-        <mat-select [(ngModel)]="dateFilterType" (selectionChange)="onDateFilterTypeChange()">
-          <mat-option value="all">All Dates</mat-option>
-          <mat-option value="today">Today</mat-option>
-          <mat-option value="yesterday">Yesterday</mat-option>
-          <mat-option value="last7days">Last 7 Days</mat-option>
-          <mat-option value="last30days">Last 30 Days</mat-option>
-          <mat-option value="thisMonth">This Month</mat-option>
-          <mat-option value="custom">Custom Range</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" *ngIf="dateFilterType === 'custom'">
-        <mat-label>Start Date</mat-label>
-        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" (dateChange)="onDateChange()" placeholder="Select start date">
-        <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-        <mat-datepicker #startPicker></mat-datepicker>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" *ngIf="dateFilterType === 'custom'">
-        <mat-label>End Date</mat-label>
-        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" (dateChange)="onDateChange()" placeholder="Select end date">
-        <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-        <mat-datepicker #endPicker></mat-datepicker>
-      </mat-form-field>
+      <div class="date-filter-container">
+        <mat-form-field
+          class="date-filter-field"
+          appearance="outline"
+          (click)="picker.open()"
+        >
+          <mat-label>Date Range</mat-label>
+          <mat-date-range-input
+            [formGroup]="dataFormDateRange"
+            [rangePicker]="picker"
+            [max]="today"
+          >
+            <input
+              matStartDate
+              formControlName="start"
+              placeholder="Start date"
+              readonly
+            />
+            <input
+              matEndDate
+              formControlName="end"
+              placeholder="End date"
+              readonly
+              (dateChange)="endChangeRegDateRange($event)"
+            />
+          </mat-date-range-input>
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-date-range-picker #picker></mat-date-range-picker>
+        </mat-form-field>
+      </div>
 
       <button mat-raised-button color="primary" (click)="loadSales()" [disabled]="isLoading">
         <mat-icon>refresh</mat-icon>
