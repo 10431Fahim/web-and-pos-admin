@@ -692,6 +692,7 @@ export class NewSalesComponent implements OnInit, OnDestroy {
                 isVariation: true,
                 displayName: `${product.name} - ${variation.name || 'Variation'}`,
                 price: variation.salePrice || variation.regularPrice || 0,
+                regularPrice: variation.regularPrice || product.regularPrice || 0,
                 costPrice: variation.costPrice || product.costPrice || 0,
                 stock: variation.quantity || 0,
                 sku: variation.sku || product.sku,
@@ -707,6 +708,7 @@ export class NewSalesComponent implements OnInit, OnDestroy {
             isVariation: false,
             displayName: this.utilsService.getProductName(product),
             price: product.salePrice || 0,
+            regularPrice: product.regularPrice || 0,
             costPrice: product.costPrice || 0,
             stock: product.quantity || 0,
             sku: product.sku,
@@ -733,6 +735,7 @@ export class NewSalesComponent implements OnInit, OnDestroy {
                   isVariation: true,
                   displayName: `${product.name} - ${variation.name || 'Variation'}`,
                   price: variation.salePrice || variation.regularPrice || 0,
+                  regularPrice: variation.regularPrice || product.regularPrice || 0,
                   costPrice: variation.costPrice || product.costPrice || 0,
                   stock: variation.quantity || 0,
                   sku: variation.sku || product.sku,
@@ -773,17 +776,18 @@ export class NewSalesComponent implements OnInit, OnDestroy {
 
   onSelectSearchItem(item: any) {
     // Direct selection from search results (already has variation selected if applicable)
+    // Use regularPrice when adding from search results
     if (item.isVariation && item.variation) {
-      this.addProductToCart(item.product, item.variation);
+      this.addProductToCart(item.product, item.variation, item.regularPrice);
     } else {
-      this.addProductToCart(item.product, null);
+      this.addProductToCart(item.product, null, item.regularPrice);
     }
     this.productSearchQuery = '';
     this.searchProducts = [];
     this.searchResultsWithVariations = [];
   }
 
-  private addProductToCart(product: Product, selectedVariation: VariationList | null) {
+  private addProductToCart(product: Product, selectedVariation: VariationList | null, useRegularPrice?: number) {
     // Create a unique identifier for this product instance (including variation)
     const uniqueId = selectedVariation
       ? `${product._id}_${selectedVariation._id}_${Date.now()}`
@@ -823,7 +827,10 @@ export class NewSalesComponent implements OnInit, OnDestroy {
       if (selectedVariation) {
         productData.selectedVariationId = selectedVariation._id;
         productData.selectedVariation = selectedVariation;
-        productData.salePrice = selectedVariation.salePrice || selectedVariation.regularPrice || product.salePrice;
+        // Use regularPrice if provided (from search results), otherwise use salePrice or regularPrice
+        productData.salePrice = useRegularPrice !== undefined && useRegularPrice > 0 
+          ? useRegularPrice 
+          : (selectedVariation.salePrice || selectedVariation.regularPrice || product.salePrice);
         productData.regularPrice = selectedVariation.regularPrice || product.regularPrice;
         productData.costPrice = selectedVariation.costPrice || product.costPrice;
         // Set purchasePrice from variation costPrice (costPrice is purchasePrice in product schema)
@@ -834,6 +841,10 @@ export class NewSalesComponent implements OnInit, OnDestroy {
         // Add variation name to product name for display
         productData.variationName = selectedVariation.name;
       } else {
+        // For non-variation products, use regularPrice if provided (from search results)
+        if (useRegularPrice !== undefined && useRegularPrice > 0) {
+          productData.salePrice = useRegularPrice;
+        }
         // For non-variation products, purchasePrice = costPrice (costPrice is purchasePrice in product schema)
         productData.purchasePrice = product.costPrice || 0;
       }
