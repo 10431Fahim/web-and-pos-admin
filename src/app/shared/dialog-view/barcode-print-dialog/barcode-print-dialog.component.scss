@@ -69,12 +69,118 @@
       }
     }
 
+    .product-selection-section {
+      margin-bottom: 24px;
+      padding: 16px;
+      background: #f5f7fa;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+
+      .selection-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+
+        h3 {
+          margin: 0;
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
+        }
+
+        .selection-actions {
+          display: flex;
+          gap: 8px;
+
+          button {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+
+            mat-icon {
+              font-size: 18px;
+              width: 18px;
+              height: 18px;
+            }
+
+            &[disabled] {
+              opacity: 0.5;
+            }
+          }
+        }
+      }
+
+      .product-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 8px;
+        background: #fff;
+
+        .product-item {
+          padding: 8px;
+          border-bottom: 1px solid #f0f0f0;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          mat-checkbox {
+            width: 100%;
+
+            .product-name-text {
+              font-weight: 500;
+              color: #333;
+            }
+
+            .product-sku {
+              font-size: 12px;
+              color: #666;
+              margin-left: 8px;
+            }
+          }
+        }
+      }
+    }
+
     .preview-section {
-      h3 {
-        margin: 0 0 16px 0;
-        font-size: 16px;
-        font-weight: 600;
-        color: #333;
+      .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+
+        h3 {
+          margin: 0;
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
+        }
+
+        .barcode-selection-actions {
+          display: flex;
+          gap: 8px;
+
+          button {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+
+            mat-icon {
+              font-size: 18px;
+              width: 18px;
+              height: 18px;
+            }
+
+            &[disabled] {
+              opacity: 0.5;
+            }
+          }
+        }
       }
 
       .barcode-preview {
@@ -86,6 +192,28 @@
         border: 1px solid #e0e0e0;
         border-radius: 8px;
 
+        .no-selection-message {
+        padding: 40px;
+        text-align: center;
+        color: #666;
+        background: #f5f5f5;
+        border-radius: 8px;
+        border: 2px dashed #ddd;
+
+        mat-icon {
+          font-size: 48px;
+          width: 48px;
+          height: 48px;
+          color: #999;
+          margin-bottom: 16px;
+        }
+
+        p {
+          margin: 0;
+          font-size: 16px;
+        }
+      }
+
         .barcode-item {
           width: 150px;
           padding: 12px;
@@ -94,6 +222,21 @@
           text-align: center;
           background: #fff;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          position: relative;
+
+          .barcode-checkbox {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            z-index: 10;
+
+            mat-checkbox {
+              ::ng-deep .mdc-checkbox {
+                background-color: rgba(255, 255, 255, 0.9);
+                border-radius: 4px;
+              }
+            }
+          }
 
           .product-name {
             font-size: 11px;

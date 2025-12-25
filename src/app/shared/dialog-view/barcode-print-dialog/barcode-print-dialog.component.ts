@@ -16,13 +16,17 @@ export interface BarcodePrintData {
   styleUrls: ['./barcode-print-dialog.component.scss']
 })
 export class BarcodePrintDialogComponent implements OnInit, OnDestroy {
-  selectedProducts: any[] = [];
+  allProducts: any[] = []; // All products passed to dialog
+  selectedProducts: any[] = []; // Products selected for printing
+  productSelection: Map<string, boolean> = new Map(); // Track which products are selected
+  barcodeSelection: Map<string, boolean> = new Map(); // Track which individual barcodes are selected (key: productId:variationId or productId:base)
   printCount: number = 1;
   showPrice: boolean = true;
   shopInformation: ShopInformation | null = null;
   barcodeDataUrls: Map<string, string> = new Map(); // For preview (canvas images)
   barcodeSvgs: Map<string, string> = new Map(); // For print (SVG strings)
   selectedVariationByProduct: Record<string, string> = {};
+  showProductSelection: boolean = true; // Show/hide product selection list
   
   // Barcode label settings from printer settings
   barcodeSettings: any = {
@@ -48,7 +52,12 @@ export class BarcodePrintDialogComponent implements OnInit, OnDestroy {
     private printerSettingsService: PrinterSettingsService,
     private shopInformationService: ShopInformationService,
   ) {
-    this.selectedProducts = data.products || [];
+    this.allProducts = data.products || [];
+    // Initially select all products
+    this.allProducts.forEach(product => {
+      this.productSelection.set(product._id, true);
+    });
+    this.updateSelectedProducts();
   }
 
   ngOnInit(): void {
@@ -209,6 +218,8 @@ export class BarcodePrintDialogComponent implements OnInit, OnDestroy {
   generateBarcodes(): void {
     this.barcodeDataUrls.clear();
     this.barcodeSvgs.clear();
+    // Initialize all barcodes as selected when generating
+    this.barcodeSelection.clear();
     this.selectedProducts.forEach(product => {
       // If product has variations, generate barcode for each variation
       if (product?.variationList?.length) {
@@ -236,6 +247,8 @@ export class BarcodePrintDialogComponent implements OnInit, OnDestroy {
               const key = `${product._id}:${variation._id}`;
               // Store SVG string for print
               this.barcodeSvgs.set(key, svg.outerHTML);
+              // Initialize as selected
+              this.barcodeSelection.set(key, true);
               
               // Also generate canvas for preview with dynamic size
               const canvas = document.createElement('canvas');
@@ -287,6 +300,8 @@ export class BarcodePrintDialogComponent implements OnInit, OnDestroy {
               const key = `${product._id}:base`;
               // Store SVG string for print
               this.barcodeSvgs.set(key, svg.outerHTML);
+              // Initialize as selected
+              this.barcodeSelection.set(key, true);
               
               // Also generate canvas for preview with dynamic size
               const canvas = document.createElement('canvas');
@@ -548,10 +563,14 @@ export class BarcodePrintDialogComponent implements OnInit, OnDestroy {
     let html = '';
     for (let i = 0; i < this.printCount; i++) {
       this.selectedProducts.forEach(product => {
-        // If product has variations, print all variations
+        // If product has variations, print selected variations only
         if (product?.variationList?.length) {
           product.variationList.forEach((variation: any) => {
             const key = `${product._id}:${variation._id}`;
+            // Only print if this barcode is selected
+            if (!this.isBarcodeSelected(key)) {
+              return; // Skip this variation
+            }
             const barcodeSvg = this.barcodeSvgs.get(key);
             const barcodeValue = this.getVariationBarcode(variation);
             if (barcodeSvg && barcodeValue) {
@@ -608,39 +627,42 @@ export class BarcodePrintDialogComponent implements OnInit, OnDestroy {
             }
           });
         } else {
-          // If no variations, print product barcode
+          // If no variations, print product barcode (only if selected)
           const key = `${product._id}:base`;
-          const barcodeSvg = this.barcodeSvgs.get(key);
-          const barcodeValue = this.getBarcodeValue(product);
-          if (barcodeSvg && barcodeValue) {
-            const productName = (product.name || 'Product').substring(0, 30);
-            const price = this.showPrice ? this.getPriceValue(product) : null;
-            const displaySku =
-              (product && (product as any).sku) ||
-              (product && (product as any).productId) ||
-              '';
-          
-            html += `
-              <div class="barcode-container">
-                ${this.barcodeSettings.showProductName ? `<div class="product-name">${this.escapeHtml(productName)}</div>` : ''}
-                ${
-                  this.barcodeSettings.showSkuAndVariant && displaySku
-                    ? `<div class="variation-name">${this.escapeHtml(`${displaySku}`)}</div>`
-                    : ''
-                }
-                <div class="barcode-svg">${barcodeSvg}</div>
-                ${
-                  this.barcodeSettings.showBarcodeAndVariant
-                    ? `<div class="variation-name">${this.escapeHtml(barcodeValue)}</div>`
-                    : this.barcodeSettings.showBarcodeCode
-                    ? `<div class="barcode-text">${this.escapeHtml(barcodeValue)}</div>`
-                    : ''
-                }
+          // Only print if this barcode is selected
+          if (this.isBarcodeSelected(key)) {
+            const barcodeSvg = this.barcodeSvgs.get(key);
+            const barcodeValue = this.getBarcodeValue(product);
+            if (barcodeSvg && barcodeValue) {
+              const productName = (product.name || 'Product').substring(0, 30);
+              const price = this.showPrice ? this.getPriceValue(product) : null;
+              const displaySku =
+                (product && (product as any).sku) ||
+                (product && (product as any).productId) ||
+                '';
+            
+              html += `
+                <div class="barcode-container">
+                  ${this.barcodeSettings.showProductName ? `<div class="product-name">${this.escapeHtml(productName)}</div>` : ''}
+                  ${
+                    this.barcodeSettings.showSkuAndVariant && displaySku
+                      ? `<div class="variation-name">${this.escapeHtml(`${displaySku}`)}</div>`
+                      : ''
+                  }
+                  <div class="barcode-svg">${barcodeSvg}</div>
+                  ${
+                    this.barcodeSettings.showBarcodeAndVariant
+                      ? `<div class="variation-name">${this.escapeHtml(barcodeValue)}</div>`
+                      : this.barcodeSettings.showBarcodeCode
+                      ? `<div class="barcode-text">${this.escapeHtml(barcodeValue)}</div>`
+                      : ''
+                  }
 
-                ${this.barcodeSettings.showPrice && price !== null ? `<div class="price-info">${currency} ${price.toFixed(2)}</div>` : ''}
-                ${this.barcodeSettings.showShopName ? `<div class="shop-name">${this.escapeHtml(shopName)}</div>` : ''}
-              </div>
-            `;
+                  ${this.barcodeSettings.showPrice && price !== null ? `<div class="price-info">${currency} ${price.toFixed(2)}</div>` : ''}
+                  ${this.barcodeSettings.showShopName ? `<div class="shop-name">${this.escapeHtml(shopName)}</div>` : ''}
+                </div>
+              `;
+            }
           }
         }
       });
@@ -652,6 +674,129 @@ export class BarcodePrintDialogComponent implements OnInit, OnDestroy {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  /**
+   * Update selected products based on selection map
+   */
+  updateSelectedProducts(): void {
+    this.selectedProducts = this.allProducts.filter(product => 
+      this.productSelection.get(product._id) === true
+    );
+    // Regenerate barcodes when selection changes
+    if (this.selectedProducts.length > 0) {
+      this.generateBarcodes();
+    } else {
+      this.barcodeDataUrls.clear();
+      this.barcodeSvgs.clear();
+    }
+  }
+
+  /**
+   * Toggle product selection
+   */
+  toggleProductSelection(productId: string): void {
+    const currentValue = this.productSelection.get(productId) || false;
+    this.productSelection.set(productId, !currentValue);
+    this.updateSelectedProducts();
+  }
+
+  /**
+   * Select all products
+   */
+  selectAllProducts(): void {
+    this.allProducts.forEach(product => {
+      this.productSelection.set(product._id, true);
+    });
+    this.updateSelectedProducts();
+  }
+
+  /**
+   * Unselect all products
+   */
+  unselectAllProducts(): void {
+    this.allProducts.forEach(product => {
+      this.productSelection.set(product._id, false);
+    });
+    this.updateSelectedProducts();
+  }
+
+  /**
+   * Check if product is selected
+   */
+  isProductSelected(productId: string): boolean {
+    return this.productSelection.get(productId) === true;
+  }
+
+  /**
+   * Get count of selected products
+   */
+  getSelectedCount(): number {
+    return this.selectedProducts.length;
+  }
+
+  /**
+   * Get count of selected barcodes
+   */
+  getSelectedBarcodeCount(): number {
+    let count = 0;
+    this.barcodeSelection.forEach((selected) => {
+      if (selected) count++;
+    });
+    return count;
+  }
+
+  /**
+   * Toggle individual barcode selection
+   */
+  toggleBarcodeSelection(key: string): void {
+    const currentValue = this.barcodeSelection.get(key) || false;
+    this.barcodeSelection.set(key, !currentValue);
+  }
+
+  /**
+   * Check if barcode is selected
+   */
+  isBarcodeSelected(key: string): boolean {
+    return this.barcodeSelection.get(key) === true;
+  }
+
+  /**
+   * Select all barcodes
+   */
+  selectAllBarcodes(): void {
+    this.barcodeSelection.forEach((value, key) => {
+      this.barcodeSelection.set(key, true);
+    });
+  }
+
+  /**
+   * Unselect all barcodes
+   */
+  unselectAllBarcodes(): void {
+    this.barcodeSelection.forEach((value, key) => {
+      this.barcodeSelection.set(key, false);
+    });
+  }
+
+  /**
+   * Check if all barcodes are selected
+   */
+  areAllBarcodesSelected(): boolean {
+    if (this.barcodeSelection.size === 0) return false;
+    let allSelected = true;
+    this.barcodeSelection.forEach((selected) => {
+      if (!selected) allSelected = false;
+    });
+    return allSelected;
+  }
+
+  /**
+   * Check if all products are selected
+   */
+  areAllSelected(): boolean {
+    return this.allProducts.length > 0 && 
+           this.allProducts.every(product => this.productSelection.get(product._id) === true);
   }
 
   onClose(): void {

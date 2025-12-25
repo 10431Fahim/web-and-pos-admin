@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatCheckbox, MatCheckboxChange } from '@angular/material/checkbox';
@@ -26,7 +26,7 @@ import { ExportToolbarComponent, ColumnVisibility } from '../../../../shared/com
   templateUrl: './customer-list.component.html',
   styleUrls: ['./customer-list.component.scss']
 })
-export class CustomerListComponent implements OnInit, OnDestroy {
+export class CustomerListComponent implements OnInit, AfterViewInit, OnDestroy {
   // Vendor Base Data
   vendorId: string;
   role: string;

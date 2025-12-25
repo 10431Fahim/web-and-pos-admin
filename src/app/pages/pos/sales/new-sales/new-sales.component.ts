@@ -688,6 +688,7 @@ export class NewSalesComponent implements OnInit, OnDestroy {
                 isVariation: true,
                 displayName: `${product.name} - ${variation.name || 'Variation'}`,
                 price: variation.salePrice || variation.regularPrice || 0,
+                costPrice: variation.costPrice || product.costPrice || 0,
                 stock: variation.quantity || 0,
                 sku: variation.sku || product.sku,
                 barcode: variation.barcode || product.barcode
@@ -702,6 +703,7 @@ export class NewSalesComponent implements OnInit, OnDestroy {
             isVariation: false,
             displayName: this.utilsService.getProductName(product),
             price: product.salePrice || 0,
+            costPrice: product.costPrice || 0,
             stock: product.quantity || 0,
             sku: product.sku,
             barcode: product.barcode

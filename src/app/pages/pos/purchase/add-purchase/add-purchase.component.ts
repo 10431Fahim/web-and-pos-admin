@@ -58,7 +58,7 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
   // Purchase Details
   purchaseDate: Date = new Date();
   discount: number = 0;
-  discountType: any ='cash'; // 0 = Cash, 1 = Percentage
+  discountType: any = 'Cash'; // 'Cash' or 'Percentage'
   tax: number = 0;
   shipping: number = 0;
   paymentType: string = 'cash';
@@ -106,12 +106,27 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
     this.activatedRoute.queryParamMap.subscribe((qParam) => {
       const isViewMode = qParam.get('view');
       this.isViewMode = isViewMode == 'true';
+      this.updateFormDisabledState();
     });
 
     this.initDataForm();
+    this.updateFormDisabledState();
     this.getAllSuppliers();
     this.getAllProducts();
     this.getShopInformation();
+  }
+
+  /**
+   * UPDATE FORM DISABLED STATE
+   */
+  private updateFormDisabledState() {
+    if (!this.dataForm) return;
+    
+    if (this.isViewMode) {
+      this.dataForm.disable();
+    } else {
+      this.dataForm.enable();
+    }
   }
 
   /**
@@ -122,7 +137,7 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
       supplierId: [null, [Validators.required]],
       purchaseDate: [new Date(), [Validators.required]],
       discount: [0],
-      discountType: [null],
+      discountType: ['Cash'],
       tax: [0],
       shipping: [0],
       paymentType: ['cash'],
@@ -242,7 +257,7 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
       this.products = this.purchase.products || [];
       this.purchaseDate = new Date(this.purchase.purchaseDate);
       this.discount = this.purchase.discount || 0;
-      this.discountType = this.purchase.discountType || 'cash';
+      this.discountType = this.purchase.discountType || 'Cash';
       this.tax = this.purchase.tax || 0;
       this.shipping = this.purchase.shipping || 0;
       this.paymentType = this.purchase.paymentType || 'cash';
@@ -262,6 +277,8 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
         reference: this.reference,
         notes: this.notes,
       });
+      
+      this.updateFormDisabledState();
     }
   }
 
@@ -564,7 +581,7 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
 
   get finalDiscount(): number {
     if (!this.discount || this.discount <= 0) return 0;
-    if (this.discountType === 1) {
+    if (this.discountType === 'Percentage') {
       // Percentage
       return (this.subTotal * this.discount) / 100;
     } else {
@@ -613,7 +630,7 @@ export class AddPurchaseComponent implements OnInit, OnDestroy {
         selectedVariationId: (p as any).selectedVariationId || null,
       })),
       discount: this.discount || 0,
-      discountType: this.discountType || 0,
+      discountType: this.discountType || 'Cash',
       tax: this.tax || 0,
       shipping: this.shipping || 0,
       total: this.grandTotal,

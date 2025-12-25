@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatCheckbox, MatCheckboxChange } from '@angular/material/checkbox';
@@ -23,7 +23,7 @@ import { ShopInformation } from '../../../../interfaces/common/shop-information.
   templateUrl: './supplier-list.component.html',
   styleUrls: ['./supplier-list.component.scss']
 })
-export class SupplierListComponent implements OnInit, OnDestroy {
+export class SupplierListComponent implements OnInit, AfterViewInit, OnDestroy {
   // Vendor Base Data
   vendorId: string;
   role: string;
@@ -320,6 +320,7 @@ export class SupplierListComponent implements OnInit, OnDestroy {
         }
       });
   }
+
 
   /**
    * ON DESTROY

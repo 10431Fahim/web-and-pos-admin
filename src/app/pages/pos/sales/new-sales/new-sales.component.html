@@ -163,7 +163,7 @@
           <div class="product-item-info">
             <span class="product-item-name">{{item.displayName}}</span>
             <span class="product-item-details">
-              Qty: {{item.stock}} | Price: {{shopInformation?.currency | currencyIcon}}{{item.price | number:'1.2-2'}}
+              Qty: {{item.stock}} | Cost Price: {{shopInformation?.currency | currencyIcon}}{{item.costPrice | number:'1.2-2'}} | Sales Price: {{shopInformation?.currency | currencyIcon}}{{item.price | number:'1.2-2'}}
               <span class="variation-badge" *ngIf="item.isVariation">Variation</span>
             </span>
             <span class="product-item-sku" *ngIf="item.sku">SKU: {{item.sku}}</span>

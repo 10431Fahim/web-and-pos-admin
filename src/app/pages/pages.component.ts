@@ -231,7 +231,7 @@ export class PagesComponent implements OnInit, OnDestroy, OnChanges {
     if (this.productSetting) {
       // menus = this.applyCampaignMenu(menus, !!this.productSetting?.isCampaignEnable);
       menus = this.applyPCBuilderMenu(menus, !!this.productSetting?.isEnablePCBuilder);
-      menus = this.applyServiceMenu(menus, !!this.productSetting?.isEnableService);
+      // menus = this.applyServiceMenu(menus, !!this.productSetting?.isEnableService);
     }
 
     // Catalog conditional submenus

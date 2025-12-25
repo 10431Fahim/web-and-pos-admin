@@ -11,6 +11,7 @@ import { ShopInformationService } from '../../../../services/common/shop-informa
 import { ConfirmDialogComponent } from '../../../../shared/components/ui/confirm-dialog/confirm-dialog.component';
 import { Supplier } from '../../../../interfaces/common/supplier.interface';
 import { Purchase } from '../../../../interfaces/common/purchase.interface';
+import { SupplierTransaction } from '../../../../interfaces/common/supplier-transaction.interface';
 import { ShopInformation } from '../../../../interfaces/common/shop-information.interface';
 
 @Component({
@@ -25,6 +26,9 @@ export class SupplierDetailsComponent implements OnInit, OnDestroy {
   supplier: Supplier = null;
   supplierStats: any = null;
   purchaseHistory: Purchase[] = [];
+  paymentHistory: SupplierTransaction[] = [];
+  filteredPaymentHistory: SupplierTransaction[] = [];
+  filteredPaymentTotal: number = 0;
   
   // Shop data
   shopInformation: ShopInformation;
@@ -42,11 +46,17 @@ export class SupplierDetailsComponent implements OnInit, OnDestroy {
   paymentReference: string = '';
   paymentNotes: string = '';
 
+  // Date Filter for Payment History
+  startDate: Date | null = null;
+  endDate: Date | null = null;
+  dateFilterApplied: boolean = false;
+
   // Subscriptions
   private subDataOne: Subscription;
   private subDataTwo: Subscription;
   private subDataThree: Subscription;
   private subDataFour: Subscription;
+  private subDataFive: Subscription;
   private subShopInfo: Subscription;
 
   constructor(
@@ -67,6 +77,7 @@ export class SupplierDetailsComponent implements OnInit, OnDestroy {
       this.getSupplierById();
       this.getSupplierStats();
       this.getPurchaseHistory();
+      this.getPaymentHistory();
       this.getShopInformation();
     } else {
       this.router.navigate(['/pos/supplier/supplier-list']);
@@ -125,6 +136,66 @@ export class SupplierDetailsComponent implements OnInit, OnDestroy {
       });
   }
 
+  private getPaymentHistory() {
+    let startDateStr: string | undefined;
+    let endDateStr: string | undefined;
+
+    if (this.startDate && this.endDate) {
+      startDateStr = this.utilsService.getDateString(this.startDate);
+      endDateStr = this.utilsService.getDateString(this.endDate);
+    }
+
+    this.subDataFive = this.supplierService.getSupplierTransactions(
+      this.supplierId,
+      startDateStr,
+      endDateStr
+    )
+      .subscribe({
+        next: (res) => {
+          if (res.success && res.data) {
+            this.paymentHistory = res.data || [];
+            this.filteredPaymentHistory = res.data || [];
+            // Use backend calculated total
+            this.filteredPaymentTotal = (res as any).totalAmount || 0;
+            this.dateFilterApplied = !!(this.startDate && this.endDate);
+          }
+        },
+        error: (err) => {
+          console.error('Error loading payment history:', err);
+        }
+      });
+  }
+
+  applyDateFilter() {
+    // Filtering is now done on backend, just reload data
+    this.getPaymentHistory();
+  }
+
+  onDateFilterChange() {
+    if (this.startDate && this.endDate) {
+      if (this.startDate > this.endDate) {
+        this.uiService.message('Start date cannot be greater than end date', 'warn');
+        return;
+      }
+      this.getPaymentHistory();
+    } else {
+      this.dateFilterApplied = false;
+      this.filteredPaymentHistory = this.paymentHistory;
+    }
+  }
+
+  clearDateFilter() {
+    this.startDate = null;
+    this.endDate = null;
+    this.dateFilterApplied = false;
+    this.getPaymentHistory();
+  }
+
+  getFilteredPaymentTotal(): number {
+    // Use backend calculated total
+    return this.filteredPaymentTotal || 0;
+  }
+
   private getShopInformation() {
     this.subShopInfo = this.shopInformationService.getShopInformation()
       .subscribe({
@@ -170,6 +241,34 @@ export class SupplierDetailsComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * GET TOTAL DUE - Use backend calculated value only
+   */
+  getTotalDue(): number {
+    return this.supplierStats?.totalDue ?? this.supplier?.totalDue ?? 0;
+  }
+
+  /**
+   * GET TOTAL PAID - Use backend calculated value only
+   */
+  getTotalPaid(): number {
+    return this.supplierStats?.totalPaid ?? this.supplier?.totalPaid ?? 0;
+  }
+
+  /**
+   * GET BALANCE - Use backend calculated value only
+   */
+  getBalance(): number {
+    return this.supplierStats?.balance ?? 0;
+  }
+
+  /**
+   * GET TOTAL PURCHASE AMOUNT - Use backend calculated value only
+   */
+  getTotalPurchaseAmount(): number {
+    return this.supplierStats?.totalPurchaseAmount ?? 0;
+  }
+
+  /**
    * ADD PAYMENT
    */
   addPayment() {
@@ -195,6 +294,7 @@ export class SupplierDetailsComponent implements OnInit, OnDestroy {
             this.paymentNotes = '';
             this.getSupplierById();
             this.getSupplierStats();
+            this.getPaymentHistory();
           } else {
             this.uiService.message(res.message || 'Failed to record payment', 'warn');
           }
@@ -218,6 +318,9 @@ export class SupplierDetailsComponent implements OnInit, OnDestroy {
     }
     if (this.subDataFour) {
       this.subDataFour.unsubscribe();
+    }
+    if (this.subDataFive) {
+      this.subDataFive.unsubscribe();
     }
     if (this.subShopInfo) {
       this.subShopInfo.unsubscribe();

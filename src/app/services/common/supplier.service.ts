@@ -198,6 +198,28 @@ export class SupplierService {
   }
 
   /**
+   * GET SUPPLIER TRANSACTIONS
+   */
+  getSupplierTransactions(id: string, startDate?: string, endDate?: string): Observable<ResponsePayload> {
+    let params = new HttpParams();
+    const shopId = this.getShopId();
+    
+    if (shopId) {
+      params = params.append('shop', shopId);
+    }
+    
+    if (startDate) {
+      params = params.append('startDate', startDate);
+    }
+    
+    if (endDate) {
+      params = params.append('endDate', endDate);
+    }
+    
+    return this.httpClient.get<ResponsePayload>(API_SUPPLIER + 'transactions/' + id, { params });
+  }
+
+  /**
    * GET SUPPLIERS WITH DUE
    */
   getSuppliersWithDue(): Observable<ResponsePayload> {

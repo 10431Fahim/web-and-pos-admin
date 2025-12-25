@@ -1047,10 +1047,12 @@ export class AllProductComponent extends DataTableSelectionBase(Component) imple
   }
 
   openBarcodePrintDialog(products?: any[]): void {
-    const productsToPrint = products || this.allTableData.filter(p => p.select);
+    // If specific products are passed, use those; otherwise use all products
+    // User can select/deselect in the dialog
+    const productsToShow = products || this.allTableData;
 
-    if (!productsToPrint || productsToPrint.length === 0) {
-      this.uiService.message('Please select at least one product', 'warn');
+    if (!productsToShow || productsToShow.length === 0) {
+      this.uiService.message('No products available', 'warn');
       return;
     }
 
@@ -1059,7 +1061,7 @@ export class AllProductComponent extends DataTableSelectionBase(Component) imple
       maxWidth: '95vw',
       maxHeight: '90vh',
       data: {
-        products: productsToPrint
+        products: productsToShow
       },
       disableClose: false
     });

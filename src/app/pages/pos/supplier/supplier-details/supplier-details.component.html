@@ -66,7 +66,7 @@
         <div class="stat-info">
           <div class="stat-label">Total Due</div>
           <div class="stat-value due-value">
-            {{shopInformation?.currency | currencyIcon}}{{ (supplier?.totalDue || 0) | number:'1.2-2'}}
+            {{shopInformation?.currency | currencyIcon}}{{ getTotalDue() | number:'1.2-2'}}
           </div>
         </div>
       </div>
@@ -77,29 +77,32 @@
         <div class="stat-info">
           <div class="stat-label">Total Paid</div>
           <div class="stat-value paid-value">
-            {{shopInformation?.currency | currencyIcon}}{{ (supplier?.totalPaid || 0) | number:'1.2-2'}}
+            {{shopInformation?.currency | currencyIcon}}{{ getTotalPaid() | number:'1.2-2'}}
           </div>
         </div>
       </div>
-      <div class="stat-card" *ngIf="supplierStats">
+      <div class="stat-card">
         <div class="stat-icon balance">
           <mat-icon>account_balance</mat-icon>
         </div>
         <div class="stat-info">
           <div class="stat-label">Balance</div>
           <div class="stat-value balance-value">
-            {{shopInformation?.currency | currencyIcon}}{{ ((supplier?.totalDue || 0) - (supplier?.totalPaid || 0)) | number:'1.2-2'}}
+            {{shopInformation?.currency | currencyIcon}}{{ getBalance() | number:'1.2-2'}}
           </div>
         </div>
       </div>
-      <div class="stat-card" *ngIf="supplierStats">
+      <div class="stat-card">
         <div class="stat-icon purchases">
           <mat-icon>shopping_cart</mat-icon>
         </div>
         <div class="stat-info">
           <div class="stat-label">Total Purchases</div>
           <div class="stat-value">
-            {{purchaseHistory?.length || 0}}
+            {{shopInformation?.currency | currencyIcon}}{{ getTotalPurchaseAmount() | number:'1.2-2'}}
+          </div>
+          <div class="stat-sub-value" *ngIf="purchaseHistory?.length > 0">
+            ({{purchaseHistory?.length || 0}} purchases)
           </div>
         </div>
       </div>
@@ -169,20 +172,30 @@
           <div class="stat-item">
             <label>Total Due</label>
             <value class="due-value">
-              {{shopInformation?.currency | currencyIcon}}{{ (supplier?.totalDue || 0) | number:'1.2-2'}}
+              {{shopInformation?.currency | currencyIcon}}{{ getTotalDue() | number:'1.2-2'}}
             </value>
           </div>
           <div class="stat-item">
             <label>Total Paid</label>
             <value class="paid-value">
-              {{shopInformation?.currency | currencyIcon}}{{ (supplier?.totalPaid || 0) | number:'1.2-2'}}
+              {{shopInformation?.currency | currencyIcon}}{{ getTotalPaid() | number:'1.2-2'}}
             </value>
           </div>
           <div class="stat-item">
             <label>Balance</label>
             <value class="balance-value">
-              {{shopInformation?.currency | currencyIcon}}{{ ((supplier?.totalDue || 0) - (supplier?.totalPaid || 0)) | number:'1.2-2'}}
+              {{shopInformation?.currency | currencyIcon}}{{ getBalance() | number:'1.2-2'}}
             </value>
+          </div>
+          <div class="stat-item" *ngIf="supplierStats?.totalPurchaseAmount">
+            <label>Total Purchase Amount</label>
+            <value>
+              {{shopInformation?.currency | currencyIcon}}{{ getTotalPurchaseAmount() | number:'1.2-2'}}
+            </value>
+          </div>
+          <div class="stat-item" *ngIf="supplierStats?.purchaseCount !== undefined">
+            <label>Total Purchases</label>
+            <value>{{supplierStats.purchaseCount || 0}}</value>
           </div>
         </div>
         <div *ngIf="!supplierStats" class="no-stats">
@@ -298,6 +311,85 @@
             <mat-icon>payment</mat-icon>
             Record Payment
           </button>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Payment History Tab -->
+    <mat-tab label="Payment History">
+      <div class="tab-content">
+        <!-- Date Filter Section -->
+        <div class="filter-section">
+          <h3>Filter by Date</h3>
+          <div class="date-filter-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Start Date</mat-label>
+              <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" (dateChange)="onDateFilterChange()">
+              <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+              <mat-datepicker #startPicker></mat-datepicker>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>End Date</mat-label>
+              <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" (dateChange)="onDateFilterChange()">
+              <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+              <mat-datepicker #endPicker></mat-datepicker>
+            </mat-form-field>
+            <button mat-stroked-button (click)="clearDateFilter()" *ngIf="dateFilterApplied">
+              <mat-icon>clear</mat-icon>
+              Clear Filter
+            </button>
+          </div>
+        </div>
+
+        <!-- Payment History Table -->
+        <div class="payment-list" *ngIf="(dateFilterApplied ? filteredPaymentHistory : paymentHistory) && (dateFilterApplied ? filteredPaymentHistory : paymentHistory).length > 0">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Payment Method</th>
+                <th>Reference</th>
+                <th>Purchase No</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let payment of (dateFilterApplied ? filteredPaymentHistory : paymentHistory)">
+                <td>{{payment.transactionDateString || (payment.transactionDate | date:'short')}}</td>
+                <td>
+                  <span class="type-badge" [ngClass]="'type-' + payment.transactionType">
+                    {{payment.transactionType === 'payment' ? 'Payment' : 
+                      payment.transactionType === 'purchase_payment' ? 'Purchase Payment' :
+                      payment.transactionType === 'purchase_due' ? 'Purchase Due' : 'Adjustment'}}
+                  </span>
+                </td>
+                <td class="amount-cell">
+                  {{shopInformation?.currency | currencyIcon}}{{ (payment.amount || 0) | number:'1.2-2'}}
+                </td>
+                <td>{{payment.paymentMethod || '-'}}</td>
+                <td>{{payment.reference || '-'}}</td>
+                <td>{{payment.purchase?.purchaseNo || payment.referenceNo || '-'}}</td>
+                <td>{{payment.notes || '-'}}</td>
+              </tr>
+            </tbody>
+            <tfoot *ngIf="dateFilterApplied && filteredPaymentHistory.length > 0">
+              <tr class="summary-row">
+                <td colspan="2"><strong>Total (Filtered):</strong></td>
+                <td class="amount-cell">
+                  <strong>{{shopInformation?.currency | currencyIcon}}{{ getFilteredPaymentTotal() | number:'1.2-2'}}</strong>
+                </td>
+                <td colspan="4"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div *ngIf="!paymentHistory || paymentHistory.length === 0" class="no-payments">
+          <p>No payment history available</p>
+        </div>
+        <div *ngIf="dateFilterApplied && filteredPaymentHistory.length === 0 && paymentHistory.length > 0" class="no-payments">
+          <p>No payments found for the selected date range</p>
         </div>
       </div>
     </mat-tab>

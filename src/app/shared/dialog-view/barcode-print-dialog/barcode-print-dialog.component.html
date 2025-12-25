@@ -29,17 +29,71 @@
       </div>
     </div>
 
-    <div class="products-info">
-      <p><strong>{{ selectedProducts.length }}</strong> product(s) selected</p>
+    <!-- Product Selection Section -->
+    <!-- <div class="product-selection-section" *ngIf="showProductSelection && allProducts.length > 0">
+      <div class="selection-header">
+        <h3>Select Products to Print</h3>
+        <div class="selection-actions">
+          <button mat-button (click)="selectAllProducts()" [disabled]="areAllSelected()">
+            <mat-icon>check_box</mat-icon>
+            Select All
+          </button>
+          <button mat-button (click)="unselectAllProducts()" [disabled]="getSelectedCount() === 0">
+            <mat-icon>check_box_outline_blank</mat-icon>
+            Unselect All
+          </button>
+        </div>
+      </div>
+      <div class="products-info">
+        <p><strong>{{ getSelectedCount() }}</strong> of <strong>{{ allProducts.length }}</strong> product(s) selected</p>
+      </div>
+      <div class="product-list">
+        <div class="product-item" *ngFor="let product of allProducts">
+          <mat-checkbox 
+            [checked]="isProductSelected(product._id)"
+            (change)="toggleProductSelection(product._id)"
+            color="primary">
+            <span class="product-name-text">{{ product.name || 'Unnamed Product' }}</span>
+            <span class="product-sku" *ngIf="product.sku">(SKU: {{ product.sku }})</span>
+          </mat-checkbox>
+        </div>
+      </div>
     </div>
 
+    <div class="products-info" *ngIf="!showProductSelection || allProducts.length === 0">
+      <p><strong>{{ getSelectedCount() }}</strong> product(s) selected</p>
+    </div> -->
+
     <div class="preview-section">
-      <h3>Preview</h3>
-      <div id="barcode-print-section" class="barcode-preview">
+      <div class="preview-header">
+        <h3>Preview</h3>
+        <div class="barcode-selection-actions" *ngIf="getSelectedCount() > 0">
+          <button mat-button (click)="selectAllBarcodes()" [disabled]="areAllBarcodesSelected()">
+            <mat-icon>check_box</mat-icon>
+            Select All Barcodes
+          </button>
+          <button mat-button (click)="unselectAllBarcodes()" [disabled]="getSelectedBarcodeCount() === 0">
+            <mat-icon>check_box_outline_blank</mat-icon>
+            Unselect All
+          </button>
+        </div>
+      </div>
+      <div *ngIf="getSelectedCount() === 0" class="no-selection-message">
+        <mat-icon>info</mat-icon>
+        <p>Please select at least one product to see preview</p>
+      </div>
+      <div id="barcode-print-section" class="barcode-preview" *ngIf="getSelectedCount() > 0">
         <ng-container *ngFor="let product of selectedProducts">
           <!-- If product has variations, show all variations -->
           <ng-container *ngIf="product?.variationList?.length">
             <div class="barcode-item" *ngFor="let variation of product.variationList">
+              <div class="barcode-checkbox">
+                <mat-checkbox 
+                  [checked]="isBarcodeSelected(product._id + ':' + variation._id)"
+                  (change)="toggleBarcodeSelection(product._id + ':' + variation._id)"
+                  color="primary">
+                </mat-checkbox>
+              </div>
               <div class="product-name" *ngIf="barcodeSettings.showProductName">{{ (product.name || 'Product').substring(0, 30) }}</div>
               <!-- <div class="variation-name" *ngIf="barcodeSettings.showVariationName">{{ variation.name }}</div> -->
               <div class="variation-name" *ngIf="barcodeSettings.showSkuAndVariant">
@@ -70,6 +124,13 @@
           </ng-container>
           <!-- If product has no variations, show single barcode -->
           <div class="barcode-item" *ngIf="!product?.variationList?.length">
+            <div class="barcode-checkbox">
+              <mat-checkbox 
+                [checked]="isBarcodeSelected(product._id + ':base')"
+                (change)="toggleBarcodeSelection(product._id + ':base')"
+                color="primary">
+              </mat-checkbox>
+            </div>
             <div class="product-name" *ngIf="barcodeSettings.showProductName">{{ (product.name || 'Product').substring(0, 30) }}</div>
             <div class="variation-name" *ngIf="barcodeSettings.showSkuAndVariant && product?.sku">
               SKU: {{ product.sku }}
@@ -97,9 +158,9 @@
 
   <mat-dialog-actions align="end">
     <button mat-button (click)="onClose()">Cancel</button>
-    <button mat-raised-button color="primary" (click)="onPrint()">
+    <button mat-raised-button color="primary" (click)="onPrint()" [disabled]="getSelectedBarcodeCount() === 0">
       <mat-icon>print</mat-icon>
-      Print
+      Print ({{ getSelectedBarcodeCount() }})
     </button>
   </mat-dialog-actions>
 </div>
