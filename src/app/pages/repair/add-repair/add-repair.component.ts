@@ -627,9 +627,10 @@ export class AddRepairComponent extends adminBaseMixin(Component) implements OnI
     mData.parts = partsData;
     mData.partsAmount = this.getPartsTotal();
 
-    if (this.saleId && partsData.length > 0) {
+    // Only include saleId if status is 'Delivered' and parts exist
+    if (this.saleId && partsData.length > 0 && this.dataForm?.get('status')?.value === 'Delivered') {
       mData.saleId = this.saleId;
-    } else if (partsData.length === 0) {
+    } else {
       mData.saleId = null;
     }
 
@@ -695,8 +696,8 @@ export class AddRepairComponent extends adminBaseMixin(Component) implements OnI
           if (res.success) {
             const repairId = res.data?._id;
 
-            // Create sale for parts if parts exist
-            if (this.parts && this.parts.length > 0) {
+            // Create sale for parts only if status is 'Delivered'
+            if (this.parts && this.parts.length > 0 && this.dataForm?.get('status')?.value === 'Delivered') {
               this.createOrUpdateSaleForParts(data, repairId);
             }
 
@@ -724,12 +725,14 @@ export class AddRepairComponent extends adminBaseMixin(Component) implements OnI
         next: (res: any) => {
           this.isLoading = false;
           if (res.success) {
-            // Update sale for parts if parts exist
-            if (this.parts && this.parts.length > 0) {
+            // Update sale for parts only if status is 'Delivered'
+            if (this.parts && this.parts.length > 0 && this.dataForm?.get('status')?.value === 'Delivered') {
               this.createOrUpdateSaleForParts(data, this.repair._id);
             } else {
-              // If no parts, delete the sale
-              this.deleteSaleForRepair();
+              // If no parts or not delivered, delete the sale if it exists
+              if (this.saleId) {
+                this.deleteSaleForRepair();
+              }
             }
 
             this.uiService.message(res.message || 'Repair updated successfully', 'success');
