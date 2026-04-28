@@ -3,11 +3,14 @@ import { ActivatedRoute } from "@angular/router";
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { OrderService } from "../../../../services/common/order.service";
 import { Subscription } from "rxjs";
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-fraud-checker',
   templateUrl: './fraud-checker.component.html',
-  styleUrl: './fraud-checker.component.scss'
+  styleUrl: './fraud-checker.component.scss',
+  standalone: true,
+  imports: [CommonModule]
 })
 export class FraudCheckerComponent implements OnInit {
   order1?: any;

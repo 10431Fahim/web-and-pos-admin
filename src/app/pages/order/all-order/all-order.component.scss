@@ -96,3 +96,19 @@ td{
   background: #1aa4e0;
   color: white;
 }
+
+.fraud-checker-clickable {
+  cursor: pointer;
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 6px;
+  background-color: #f5f7fa;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+
+  &:hover {
+    background-color: #edf2f7;
+    color: #0a55e5;
+  }
+}

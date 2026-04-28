@@ -357,17 +357,21 @@
                         </a>
                       </div>
 <!--                      Fraud checker-->
-                      <ng-container
-                        [ngSwitch]="getFraudSummary(data.phoneNo) === undefined ? 'loading' : (getFraudSummary(data.phoneNo) === null ? 'empty' : 'ok')">
-                        <span *ngSwitchCase="'loading'" class="muted">Checking…</span>
-                        <span *ngSwitchCase="'empty'" class="muted">No results</span>
-                        <span *ngSwitchCase="'ok'">
-                            <ng-container *ngIf="getFraudSummary(data.phoneNo) as s">
-                              <span><strong>{{ s.success_ratio | number:'1.0-2' }}
-                                %</strong> ({{ s.total_parcel?? 0 }})</span>
-                            </ng-container>
-                          </span>
-                      </ng-container>
+                      <span class="fraud-checker-clickable" 
+                            (click)="openFraudCheckerDialog($event, data.phoneNo)"
+                            matTooltip="Click to open Fraud Checker details">
+                        <ng-container
+                          [ngSwitch]="getFraudSummary(data.phoneNo) === undefined ? 'loading' : (getFraudSummary(data.phoneNo) === null ? 'empty' : 'ok')">
+                          <span *ngSwitchCase="'loading'" class="muted">Checking…</span>
+                          <span *ngSwitchCase="'empty'" class="muted">No results</span>
+                          <span *ngSwitchCase="'ok'">
+                              <ng-container *ngIf="getFraudSummary(data.phoneNo) as s">
+                                <span><strong>{{ s.success_ratio | number:'1.0-2' }}
+                                  %</strong> ({{ s.total_parcel?? 0 }})</span>
+                              </ng-container>
+                            </span>
+                        </ng-container>
+                      </span>
                     </td>
 
                     <td><p class="hoverLink">{{ data.orderedFrom ?? '-' | titlecase }}</p></td>

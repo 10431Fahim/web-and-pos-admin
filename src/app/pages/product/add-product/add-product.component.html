@@ -40,7 +40,10 @@
 
             <div class="header-row1" style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
               <h2 class="title" style="margin: 0;">General Information</h2>
-              <mat-checkbox formControlName="autoSlug" color="primary">Auto Slug</mat-checkbox>
+              <div style="display: flex; gap: 16px;">
+                <mat-checkbox formControlName="isPreOrder" color="primary">Is Pre-Order</mat-checkbox>
+                <mat-checkbox formControlName="autoSlug" color="primary">Auto Slug</mat-checkbox>
+              </div>
             </div>
 
 
@@ -525,6 +528,10 @@
                         (change)="setDefaultVariation(i, $event.checked)"
                       >
                         Default
+                      </mat-checkbox>
+                      
+                      <mat-checkbox formControlName="isPreOrder" color="primary">
+                        Pre-Order
                       </mat-checkbox>
                       <div
                         class="flex-icon-img"

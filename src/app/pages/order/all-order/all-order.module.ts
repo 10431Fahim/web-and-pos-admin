@@ -23,7 +23,7 @@ import {MatDatepickerModule} from "@angular/material/datepicker";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {PaymentStatusPipe} from '../../../shared/pipes/payment-status.pipe';
 import {JoinSkusPipe} from "../../../shared/pipes/join-sku.pipe";
-
+import { FraudCheckerComponent } from '../order-details/fraud-checker/fraud-checker.component';
 
 @NgModule({
   declarations: [
@@ -50,7 +50,8 @@ import {JoinSkusPipe} from "../../../shared/pipes/join-sku.pipe";
         MatFormFieldModule,
         ReactiveFormsModule,
         PaymentStatusPipe,
-        JoinSkusPipe
+        JoinSkusPipe,
+        FraudCheckerComponent
     ]
 })
 export class AllOrderModule { }

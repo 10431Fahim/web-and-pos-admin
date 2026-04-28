@@ -46,6 +46,7 @@ import { NoteDialogComponent } from '../../../shared/dialog-view/note-dialog/not
 import { ProductSummaryDialogComponent } from '../../../shared/dialog-view/product-summary-dialog/product-summary-dialog.component';
 import { TableDetailsDialogComponent } from '../../../shared/dialog-view/table-details-dialog/table-details-dialog.component';
 import { JoinSkusPipe } from '../../../shared/pipes/join-sku.pipe';
+import { FraudCheckerComponent } from '../order-details/fraud-checker/fraud-checker.component';
 
 @Component({
   selector: 'app-all-order',
@@ -647,34 +648,34 @@ export class AllOrderComponent
             this.checkSelectionData();
 
             // Prefetch fraud summaries for current page phone numbers
-            // const uniquePhones = new Set<string>(
-            //   this.allTableData.map((o) => o?.phoneNo).filter((p) => !!p)
-            // );
-            // uniquePhones.forEach((phone) => {
-            //   if (!this.fraudSummaries.has(phone)) {
-            //     // mark as loading
-            //     this.fraudSummaries.set(phone, undefined);
-            //     const subFraud = this.orderService
-            //       .checkedFraudOrder(phone)
-            //       .subscribe({
-            //         next: (r) => {
-            //           const s = r?.data?.courierData?.summary;
-            //           if (s && s.total_parcel != null) {
-            //             this.fraudSummaries.set(phone, {
-            //               success_ratio: s.success_ratio ?? 0,
-            //               total_parcel: s.total_parcel ?? 0,
-            //             });
-            //           } else {
-            //             this.fraudSummaries.set(phone, null);
-            //           }
-            //         },
-            //         error: () => {
-            //           this.fraudSummaries.set(phone, null);
-            //         },
-            //       });
-            //     this.subscriptions.push(subFraud);
-            //   }
-            // });
+            const uniquePhones = new Set<string>(
+              this.allTableData.map((o) => o?.phoneNo).filter((p) => !!p)
+            );
+            uniquePhones.forEach((phone) => {
+              if (!this.fraudSummaries.has(phone)) {
+                // mark as loading
+                this.fraudSummaries.set(phone, undefined);
+                const subFraud = this.orderService
+                  .checkedFraudOrder(phone)
+                  .subscribe({
+                    next: (r) => {
+                      const s = r?.data?.courierData?.summary;
+                      if (s && s.total_parcel != null) {
+                        this.fraudSummaries.set(phone, {
+                          success_ratio: s.success_ratio ?? 0,
+                          total_parcel: s.total_parcel ?? 0,
+                        });
+                      } else {
+                        this.fraudSummaries.set(phone, null);
+                      }
+                    },
+                    error: () => {
+                      this.fraudSummaries.set(phone, null);
+                    },
+                  });
+                this.subscriptions.push(subFraud);
+              }
+            });
 
           }
           this.isLoading = false;
@@ -1820,6 +1821,46 @@ export class AllOrderComponent
     phone: string
   ): { success_ratio: number; total_parcel: number } | null | undefined {
     return this.fraudSummaries.get(phone);
+  }
+
+  openFraudCheckerDialog(event: Event, phoneNo: string) {
+    event.stopPropagation();
+    if (!phoneNo) return;
+
+    this.isLoading = true;
+    const subscription = this.orderService
+      .checkedFraudOrder(phoneNo)
+      .subscribe({
+        next: (res) => {
+          this.isLoading = false;
+          if (res.success) {
+            const courierData = res.data?.courierData;
+            const dialogRef = this.dialog.open(FraudCheckerComponent, {
+              maxWidth: "900px",
+              width: "100%",
+              height: "auto",
+              panelClass: 'custom-dialog-container',
+              data: { 
+                mobile: phoneNo,
+                courierData: courierData,
+              }
+            });
+
+            dialogRef.afterClosed().subscribe(result => {
+              if (result) {
+                this.reloadService.needRefreshData$();
+              }
+            });
+          } else {
+            this.uiService.message(res.message, 'warn');
+          }
+        },
+        error: (error) => {
+          this.isLoading = false;
+          console.log(error);
+        },
+      });
+    this.subscriptions.push(subscription);
   }
 
   /**

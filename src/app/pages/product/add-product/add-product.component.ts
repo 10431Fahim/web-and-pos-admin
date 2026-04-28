@@ -279,6 +279,7 @@ export class AddProductComponent implements OnInit {
       batchNumber: [null],
       batchDate: [null],
       barcode: [null],
+      isPreOrder: [false],
     });
 
     this.specificationDataArray = this.dataForm.get(
@@ -531,6 +532,7 @@ export class AddProductComponent implements OnInit {
         expiryDateString: [m.expiryDateString || null],
           image: [m.image],
           sku: [m.sku],
+          isPreOrder: [(m as any)?.isPreOrder || false],
           isDefault: [(m as any)?.isDefault || false],
         });
         this.variationListDataArray.push(f);
@@ -830,6 +832,7 @@ export class AddProductComponent implements OnInit {
                 existingData ? existingData.expiryDateString : null,
               ],
               image: [existingData ? existingData.image : null],
+              isPreOrder: [existingData ? existingData.isPreOrder : false],
               isDefault: [existingData ? !!existingData.isDefault : false],
             });
 
@@ -879,6 +882,7 @@ export class AddProductComponent implements OnInit {
               existingData ? existingData.expiryDateString : null,
             ],
             image: [existingData ? existingData.image : null],
+            isPreOrder: [existingData ? existingData.isPreOrder : false],
             isDefault: [existingData ? !!existingData.isDefault : false],
           });
 

@@ -16,8 +16,7 @@ import {
 
 @NgModule({
   declarations: [
-    OrderDetailsComponent,
-    FraudCheckerComponent
+    OrderDetailsComponent
   ],
     imports: [
         CommonModule,
@@ -27,7 +26,8 @@ import {
         ProductPricePipe,
         ImageLoadErrorModule,
         CurrencyPipe,
-        GalleryImageViewerComponent
+        GalleryImageViewerComponent,
+        FraudCheckerComponent
     ]
 })
 export class OrderDetailsModule { }
