@@ -2,7 +2,7 @@ import { AdminMenu } from '../../interfaces/core/admin-menu.interface';
 import { environment } from '../../../environments/environment';
 
 
-const ALL_MENUS1: AdminMenu[] = [
+const ALL_MENUS: AdminMenu[] = [
   {
     id: 0,
     name: 'Dashboard',
@@ -1024,7 +1024,7 @@ const ALL_MENUS1: AdminMenu[] = [
 ];
 
 //Super Counter Menu
-export const ALL_MENUS: AdminMenu[] = [
+export const ALL_MENUS1: AdminMenu[] = [
   {
     id: 0,
     name: 'Dashboard',
